@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>House Builder Shop</title>
+  <style>
+    :root{
+      --bg:#f5efe6;
+      --panel:#fffaf2;
+      --panel-2:#f2e4d8;
+      --primary:#744d2a;
+      --accent:#c97a3d;
+      --accent-2:#9bc4b1;
+      --money:#2d8c5b;
+      --danger:#b55151;
+      --text:#2b1d15;
+      --shadow:0 10px 25px rgba(31,20,13,0.15);
+    }
+
+    * { box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #f7f2ea, #efdfca);
+      color: var(--text);
+    }
+
+    .game{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      background: linear-gradient(135deg, #f2dcc0, #e8c39a);
+      border:2px solid rgba(54,33,18,0.15);
+      border-radius:16px;
+      padding:16px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom:18px;
+    }
+
+    .title{
+      font-size: clamp(1.7rem, 2vw, 2.5rem);
+      font-weight:800;
+      letter-spacing:0.04em;
+      color: var(--primary);
+    }
+
+    .stats{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .stat{
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 8px 12px;
+      min-width: 120px;
+      text-align:center;
+      font-weight:700;
+    }
+
+    .stat .label{
+      display:block;
+      font-size:0.75rem;
+      color:#5c4a3e;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    .stat .value{
+      display:block;
+      font-size:1.2rem;
+      margin-top:3px;
+    }
+    .money { color: var(--money); }
+    .day { color:#5b3c2c }
+    .goal { color:#7d4e2d }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 1.2fr 1.6fr 1.3fr;
+      gap:18px;
+      align-items: start;
+    }
+
+    .panel{
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 18px;
+      border: 2px solid rgba(75,48,26,0.1);
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2{
+      margin:0 0 14px 0;
+      font-size:1.1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    .supplier-list, .inventory-list, .customer-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .product-row{
+      display:grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items:center;
+      padding:10px 12px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #fffaf6, #f7ebde);
+      border:1px solid rgba(99,60,38,0.08);
+    }
+
+    .product-name{
+      font-weight:700;
+    }
+
+    .product-meta{
+      font-size:0.8rem;
+      color:#6d564f;
+    }
+
+    .buy-btn, .sell-btn, .next-btn, .build-btn, .reset-btn{
+      border:none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor:pointer;
+      font-weight:700;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    .buy-btn:hover, .sell-btn:hover, .next-btn:hover, .build-btn:hover, .reset-btn:hover{
+      transform: translateY(-1px);
+      opacity:0.96;
+    }
+
+    .buy-btn{
+      background: var(--accent);
+      color: white;
+    }
+
+    .sell-btn{
+      background: var(--money);
+      color:white;
+    }
+
+    .next-btn{
+      background: #4a6f8c;
+      color:white;
+    }
+
+    .build-btn{
+      background: #90714b;
+      color:white;
+      width:100%;
+      margin-top:10px;
+    }
+
+    .reset-btn{
+      background: #6a4a55;
+      color:white;
+      width:100%;
+      margin-top:10px;
+    }
+
+    .store-setup{
+      border-top:1px solid rgba(0,0,0,0.06);
+      margin-top:14px;
+      padding-top:14px;
+    }
+
+    .store-header{
+      display:flex;
+      justify-content: space-between;
+      gap:10px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+
+    .section-tag{
+      display:inline-block;
+      font-size:0.71rem;
+      letter-spacing:0.08em;
+      background:#f9e9d2;
+      border:1px solid rgba(0,0,0,0.05);
+      color:#6d533d;
+      padding:5px 8px;
+      border-radius:999px;
+      text-transform:uppercase;
+      font-weight:700;
+    }
+
+    .customer-card{
+      background: linear-gradient(180deg, #fffdfb, #f4e7d6);
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius: 14px;
+      padding:12px 12px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .customer-header{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+    }
+
+    .customer-name{
+      font-weight:800;
+    }
+    .customer-badge{
+      font-size:0.6rem;
+      text-transform: uppercase;
+      padding:6px 8px;
+      border-radius:99px;
+      background:#ecf3ee;
+      color:#386b52;
+      font-weight:700;
+      letter-spacing:0.08em;
+    }
+
+    .customer-info{
+      font-size:0.8rem;
+      color:#594b41;
+      line-height:1.4;
+    }
+
+    .customer-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .qty-select{
+      width:68px;
+      border:1px solid rgba(0,0,0,0.1);
+      border-radius:10px;
+      background:#fff;
+      padding:8px;
+      font-weight:700;
+    }
+
+    .house-panel{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .house-visual{
+      position:relative;
+      background: linear-gradient(180deg, #dfeef2, #c7e2df);
+      border-radius:18px;
+      border:2px solid rgba(0,0,0,0.08);
+      min-height: 260px;
+      overflow:hidden;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .grass{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height:42px;
+      background: linear-gradient(180deg, #a6d685, #78b565);
+    }
+
+    .house{
+      position:relative;
+      width: 220px;
+      height: 180px;
+      bottom: 18px;
+      transition: all 0.3s ease;
+    }
+
+    .house-part{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      opacity:0.12;
+      transition: all 0.35s ease;
+      border:2px solid rgba(51,30,20,0.45);
+    }
+    .house-part.active{
+      opacity:1;
+    }
+
+    .foundation{
+      bottom:0;
+      width:180px; height:26px;
+      background:#c2bcc4;
+      border-radius:8px;
+    }
+    .walls{
+      bottom:26px;
+      width:150px; height:74px;
+      background:#d8c4a0;
+      border-radius:10px;
+    }
+    .roof{
+      bottom:90px;
+      width:190px; height:52px;
+      background:#7d4a39;
+      clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+      border:none;
+    }
+    .door{
+      bottom:0; left:50%;
+      transform:translateX(-50%);
+      width:38px; height:60px;
+      background:#6f4233;
+      border-radius:10px 10px 0 0;
+    }
+    .window{
+      width:26px; height:26px; background:#9dd8f4; border-radius:8px; bottom:42px;
+      border:2px solid rgba(51,30,20,0.45);
+    }
+    .window.left{ left: calc(50% - 50px); }
+    .window.right{ left: calc(50% + 26px); }
+
+    .build-stage{
+      background: linear-gradient(180deg, #fff, #f5ebdc);
+      border:1px solid rgba(0,0,0,0.08);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .build-stage h3{
+      margin:0 0 6px 0;
+      font-size:1rem;
+    }
+
+    .build-stage p{
+      margin:0;
+      font-size:0.8rem;
+      color:#6a5249;
+      line-height:1.5;
+    }
+
+    .build-stage.locked{
+      opacity:0.72;
+    }
+
+    .message{
+      min-height:24px;
+      font-weight:700;
+      color: var(--primary);
+      margin-top:12px;
+    }
+
+    .message.error { color: var(--danger); }
+    .message.success { color: var(--money); }
+
+    @media (max-width: 1000px){
+      .layout{
+        grid-template-columns: 1fr;
+      }
+      .house-panel{
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <div class="topbar">
+      <div class="title">House Builder Shop</div>
+      <div class="stats">
+        <div class="stat">
+          <span class="label">Cash</span>
+          <span class="value money" id="money">$0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Day</span>
+          <span class="value day" id="day">1</span>
+        </div>
+        <div class="stat">
+          <span class="label">House Goal</span>
+          <span class="value goal" id="goal">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <h2>Wholesaler</h2>
+        <div id="supplierList" class="supplier-list"></div>
+
+        <div class="store-setup">
+          <div class="store-header">
+            <h2 style="margin:0;">Inventory</h2>
+            <span class="section-tag">Your store</span>
+          </div>
+          <div id="inventoryList" class="inventory-list"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="store-header">
+          <h2 style="margin:0;">Town Shoppers</h2>
+          <button class="next-btn" id="nextDayBtn">Next Day</button>
+        </div>
+        <div id="customerList" class="customer-list"></div>
+      </div>
+
+      <div class="panel house-panel">
+        <h2>House Progress</h2>
+
+        <div class="house-visual">
+          <div class="house">
+            <div class="house-part roof active" id="roofPart"></div>
+            <div class="house-part walls active" id="wallsPart"></div>
+            <div class="house-part foundation active" id="foundationPart"></div>
+            <div class="house-part door active" id="doorPart"></div>
+            <div class="house-part window left active" id="windowLeft"></div>
+            <div class="house-part window right active" id="windowRight"></div>
+          </div>
+          <div class="grass"></div>
+        </div>
+
+        <div id="buildStages"></div>
+
+        <div id="message" class="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const products = {
+      bread: { name: "Bread", wholesale: 2, retail: 6, color: "#f4c95d", supplier: "Marta the Baker" },
+      milk: { name: "Milk", wholesale: 3, retail: 7, color: "#d8eff7", supplier: "Pearl Dairy" },
+      apples: { name: "Apples", wholesale: 2, retail: 5, color: "#d57b7b", supplier: "Farmer Reed" },
+      soap: { name: "Soap", wholesale: 4, retail: 9, color: "#c2d8c8", supplier: "Luna Goods" },
+      chairs: { name: "Chairs", wholesale: 8, retail: 18, color: "#d0b38d", supplier: "Oak & Pine" }
+    };
+
+    const houseStages = [
+      { id:"foundation", label:"Foundation", cost:250, description:"Lay the concrete base for your home." },
+      { id:"walls", label:"Walls", cost:650, description:"Build the main structure and rooms." },
+      { id:"roof", label:"Roof", cost:1200, description:"Add the roof and protect the house." },
+      { id:"windows", label:"Windows & Door", cost:1800, description:"Finish the house with windows and a front door." },
+      { id:"complete", label:"Move In", cost:3000, description:"Complete the home and start living there." }
+    ];
+
+    const randomNames = ["Ava","Liam","Noah","Emma","Olivia","Milo","Sofia","Ethan","Zoe","Leo","Grace","Nora","Theo","Ivy","Lucas","Maya","Jack","Ella","Caleb","Ruby"];
+    const randomWords = ["Market","Corner","Sunset","Harbor","Town","Park","Maple","River","Hills","Farm"];
+
+    const defaultState = () => ({
+      money: 80,
+      day: 1,
+      stock: { bread: 0, milk: 0, apples: 0, soap: 0, chairs: 0 },
+      houseStageIndex: 0,
+      customers: [],
+      message: "Buy cheap stock from the supplier, then sell it to customers at a profit.",
+      totalSales: 0,
+      totalSpent: 0
+    });
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem("houseBuilderShop");
+        if (!raw) return defaultState();
+        return JSON.parse(raw);
+      } catch {
+        return defaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem("houseBuilderShop", JSON.stringify(state));
+    }
+
+    function moneyFormat(num) {
+      return "$" + Math.round(num).toLocaleString();
+    }
+
+    function showMessage(text, type = "") {
+      const el = document.getElementById("message");
+      el.textContent = text;
+      el.className = "message";
+      if (type) el.classList.add(type);
+    }
+
+    function getCurrentHouseCost() {
+      const current = houseStages[state.houseStageIndex];
+      return current ? current.cost : 0;
+    }
+
+    function renderSupplier() {
+      const list = document.getElementById("supplierList");
+      list.innerHTML = "";
+
+      Object.entries(products).forEach(([id, item]) => {
+        const row = document.createElement("div");
+        row.className = "product-row";
+        row.innerHTML = `
+          <div>
+            <div class="product-name" style="color:${item.color};">${item.name}</div>
+            <div class="product-meta">Bulk: ${moneyFormat(item.wholesale)} / unit • Retail: ${moneyFormat(item.retail)} / unit</div>
+          </div>
+          <div class="product-meta">${item.supplier}</div>
+          <button class="buy-btn" data-id="${id}">Buy 12</button>
+        `;
+        list.appendChild(row);
+      });
+
+      document.querySelectorAll(".buy-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.id;
+          const qty = 12;
+          const totalCost = products[id].wholesale * qty;
+          if (state.money < totalCost) {
+            showMessage(`You need ${moneyFormat(totalCost)} to buy 12 ${products[id].name}.`, "error");
+            return;
+          }
+          state.money -= totalCost;
+          state.totalSpent += totalCost;
+          state.stock[id] += qty;
+          state.message = `Bought 12 ${products[id].name} from ${products[id].supplier}.`;
+          saveState();
+          render();
+        });
+      });
+    }
+
+    function renderInventory() {
+      const list = document.getElementById("inventoryList");
+      list.innerHTML = "";
+
+      Object.entries(products).forEach(([id, item]) => {
+        const div = document.createElement("div");
+        div.className = "product-row";
+        div.innerHTML = `
+          <div>
+            <div class="product-name">${item.name}</div>
+            <div class="product-meta">Stock: ${state.stock[id]} units</div>
+          </div>
+          <div class="product-meta">Profit: ${moneyFormat(item.retail - item.wholesale)} / sold</div>
+          <div class="section-tag">${item.name}</div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function generateCustomers() {
+      const count = 3 + Math.min(3, Math.floor(state.day / 2));
+      const list = [];
+
+      for (let i = 0; i < count; i++) {
+        const productId = Object.keys(products)[Math.floor(Math.random() * Object.keys(products).length)];
+        const product = products[productId];
+        const demand = 1 + Math.floor(Math.random() * 4);
+        const budget = product.retail * demand + 12 + Math.floor(Math.random() * 25);
+
+        list.push({
+          id: `customer-${state.day}-${i}-${Math.random().toString(36).slice(2,8)}`,
+          name: randomNames[Math.floor(Math.random() * randomNames.length)],
+          area: randomWords[Math.floor(Math.random() * randomWords.length)],
+          productId,
+          demand,
+          budget,
+          offer: product.retail * demand
+        });
+      }
+      state.customers = list;
+    }
+
+    function nextDay() {
+      state.day += 1;
+      generateCustomers();
+      showMessage(`Day ${state.day}: New shoppers arrived in town.`, "success");
+      saveState();
+      render();
+    }
+
+    function renderCustomers() {
+      const list = document.getElementById("customerList");
+      list.innerHTML = "";
+
+      if (!state.customers.length) {
+        list.innerHTML = `<div class="customer-card"><strong>No customers today.</strong><div class="customer-info">Advance to the next day to attract new townsfolk.</div></div>`;
+        return;
+      }
+
+      state.customers.forEach(customer => {
+        const product = products[customer.productId];
+        const card = document.createElement("div");
+        card.className = "customer-card";
+
+        card.innerHTML = `
+          <div class="customer-header">
+            <div class="customer-name">${customer.name} from ${customer.area}</div>
+            <div class="customer-badge">${product.name}</div>
+          </div>
+          <div class="customer-info">
+            Wants <strong>${customer.demand}</strong> ${product.name}<br>
+            Budget: ${moneyFormat(customer.budget)}<br>
+            Willing to pay about ${moneyFormat(customer.offer)}
+          </div>
+          <div class="customer-actions">
+            <select class="qty-select" data-customer="${customer.id}">
+              ${Array.from({length: Math.min(4, customer.demand || 4)}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join("")}
+            </select>
+            <button class="sell-btn" data-customer="${customer.id}">Sell</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      document.querySelectorAll(".sell-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.customer;
+          const customer = state.customers.find(c => c.id === id);
+          const select = document.querySelector(`.qty-select[data-customer="${id}"]`);
+          const qty = parseInt(select.value, 10) || 1;
+
+          if (!customer) return;
+
+          if (state.stock[customer.productId] < qty) {
+            showMessage(`Not enough ${products[customer.productId].name} in stock.`, "error");
+            return;
+          }
+
+          const salePrice = customer.offer * (qty / customer.demand);
+          const totalSale = Math.round(salePrice);
+
+          if (customer.budget < totalSale) {
+            showMessage(`${customer.name} can't afford that much ${products[customer.productId].name}.`, "error");
+            return;
+          }
+
+          state.stock[customer.productId] -= qty;
+          state.money += totalSale;
+          state.totalSales += totalSale;
+
+          state.customers = state.customers.filter(c => c.id !== id);
+          showMessage(`${customer.name} bought ${qty} ${products[customer.productId].name} for ${moneyFormat(totalSale)}.`, "success");
+          saveState();
+          render();
+        });
+      });
+    }
+
+    function renderHouseVisual() {
+      const stageIndex = state.houseStageIndex;
+      const parts = [
+        { id: "foundationPart", active: stageIndex >= 0 },
+        { id: "wallsPart", active: stageIndex >= 1 },
+        { id: "roofPart", active: stageIndex >= 2 },
+        { id: "doorPart", active: stageIndex >= 3 },
+        { id: "windowLeft", active: stageIndex >= 3 },
+        { id: "windowRight", active: stageIndex >= 3 }
+      ];
+
+      parts.forEach(part => {
+        const el = document.getElementById(part.id);
+        if (el) {
+          el.classList.toggle("active", part.active);
+        }
+      });
+
+      const house = document.querySelector(".house");
+      if (house) {
+        house.style.transform = stageIndex >= 4 ? "scale(1.04)" : `scale(${1 + stageIndex * 0.04})`;
+      }
+    }
+
+    function renderBuildStages() {
+      const container = document.getElementById("buildStages");
+      container.innerHTML = "";
+
+      houseStages.forEach((stage, index) => {
+        const built = index < state.houseStageIndex;
+        const current = index === state.houseStageIndex;
+        const canAfford = state.money >= stage.cost;
+
+        const card = document.createElement("div");
+        card.className = `build-stage ${built ? "complete" : ""} ${current ? "" : "locked"}`;
+
+        let buttonHTML = "";
+        if (built) {
+          buttonHTML = `<button class="build-btn" disabled>Built</button>`;
+        } else if (index === state.houseStageIndex) {
+          buttonHTML = `<button class="build-btn" ${canAfford ? "" : "disabled"} data-build-index="${index}">
+            ${canAfford ? `Build ${stage.label}` : `Need ${moneyFormat(stage.cost)}`}
+          </button>`;
+        }
+
+        card.innerHTML = `
+          <h3>${index + 1}. ${stage.label}</h3>
+          <p>${stage.description}</p>
+          <p><strong>Cost:</strong> ${moneyFormat(stage.cost)}</p>
+          ${buttonHTML}
+        `;
+        container.appendChild(card);
+
+        const buildBtn = card.querySelector("[data-build-index]");
+        if (buildBtn) {
+          buildBtn.addEventListener("click", () => {
+            if (state.money < stage.cost) {
+              showMessage(`You need ${moneyFormat(stage.cost)} to build the ${stage.label.toLowerCase()}.`, "error");
+              return;
+            }
+            state.money -= stage.cost;
+            state.houseStageIndex += 1;
+            showMessage(`You built the ${stage.label}!`, "success");
+            saveState();
+            render();
+          });
+        }
+      });
+
+      if (state.houseStageIndex >= houseStages.length) {
+        const done = document.createElement("div");
+        done.className = "build-stage";
+        done.innerHTML = `
+          <h3>House Complete</h3>
+          <p>You finished the home and turned your shop profits into a real house.</p>
+        `;
+        container.appendChild(done);
+        showMessage("You built your dream home. You win!", "success");
+      }
+    }
+
+    function render() {
+      document.getElementById("money").textContent = moneyFormat(state.money);
+      document.getElementById("day").textContent = String(state.day);
+      const progress = Math.min(100, Math.round((state.houseStageIndex / houseStages.length) * 100));
+      document.getElementById("goal").textContent = `${progress}%`;
+
+      renderSupplier();
+      renderInventory();
+      renderCustomers();
+      renderHouseVisual();
+      renderBuildStages();
+
+      const messageEl = document.getElementById("message");
+      if (!messageEl.textContent.trim()) {
+        showMessage(state.message);
+      }
+    }
+
+    document.getElementById("nextDayBtn").addEventListener("click", nextDay);
+
+    const resetBtn = document.createElement("button");
+    resetBtn.className = "reset-btn";
+    resetBtn.textContent = "Reset Game";
+    resetBtn.addEventListener("click", () => {
+      const confirmed = confirm("Reset your shop and house progress?");
+      if (!confirmed) return;
+      state = defaultState();
+      saveState();
+      showMessage("Fresh start. Build your house from the ground up.", "success");
+      render();
+    });
+    document.querySelector(".house-panel").appendChild(resetBtn);
+
+    if (!state.customers.length) generateCustomers();
+    showMessage(state.message);
+    saveState();
+    render();
+  </script>
+</body>
+</html>
